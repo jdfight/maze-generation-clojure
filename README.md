@@ -1,32 +1,113 @@
 # maze-generator
 
-FIXME: description
+This project is intended as a learning project for learning Clojure by implementing Maze algorithms from the Book [Mazes For Programmers](http://www.mazesforprogrammers.com) by James Buck.
+
+
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Checkout the source and open up a Leiningen REPL.
 
 ## Usage
 
-FIXME: explanation
+To print a maze, open up a REPL in the project folder and evaluate One of the following commands :
 
-    $ java -jar maze-generator-0.1.0-standalone.jar [args]
+```
+(println (maze-to-string (binary-tree 10) 10))
+```
+Example output:
+```
++---+---+---+---+---+---+---+---+---+---+
+|                                       |
++   +---+---+---+---+---+   +   +---+   +
+|   |                       |   |       |
++---+   +---+   +---+---+   +   +---+   +
+|       |       |           |   |       |
++---+---+   +---+---+---+   +---+   +   +
+|           |               |       |   |
++   +   +   +   +---+---+---+---+   +   +
+|   |   |   |   |                   |   |
++---+---+   +   +   +---+---+   +---+   +
+|           |   |   |           |       |
++   +   +   +---+   +---+   +   +---+   +
+|   |   |   |       |       |   |       |
++---+---+---+---+---+---+---+---+---+   +
+|                                       |
++   +   +---+---+   +---+---+   +---+   +
+|   |   |           |           |       |
++   +   +---+   +---+   +---+   +   +   +
+|   |   |       |       |       |   |   |
++---+---+---+---+---+---+---+---+---+---+
+```
 
-## Options
+maze-to-string takes 2 arguments: A maze grid and a row size.
 
-FIXME: listing of options this app accepts.
 
-## Examples
+Algorithms So far:
 
+#### Binary tree
+```
+(binary-tree grid-size)
+```
+Creates a binary tree maze.  This algorithm is the simplest and has a diagonal bias up towards the northeast side of the grid.
+
+#### Recursive Backtracker
+```
+(recursive-backtracker maze-grid starting-cell-id)
+```
+Creates a recursive backtracker maze.  This algorithm is more complex than binary tree and creates long winding passages.  I find these mazes to be more aesthetically pleasing.
+
+#### Example
+```
+maze-generator.core=> (println (maze-to-string (recursive-backtracker (create-grid 20) (rand-int 400)) 20))
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+|                           |           |   |                               |   |
++   +---+---+---+---+---+   +---+   +   +   +   +---+   +---+---+---+---+   +   +
+|       |                       |   |   |       |       |       |       |   |   |
++   +---+   +---+---+---+---+   +---+   +   +---+   +---+   +   +   +   +   +   +
+|   |       |           |       |   |   |   |       |       |   |   |   |   |   |
++   +   +---+   +---+   +   +---+   +   +---+   +---+   +---+   +   +   +   +   +
+|   |       |   |       |           |           |       |           |   |   |   |
++   +---+   +   +   +---+---+---+   +---+---+---+   +---+---+---+   +---+   +   +
+|       |   |   |   |               |           |               |   |       |   |
++---+---+   +   +   +---+---+---+---+   +---+   +   +---+---+   +   +   +---+   +
+|       |       |       |       |       |   |       |       |   |   |   |       |
++   +   +---+---+---+   +   +   +   +---+   +---+---+---+   +   +---+   +   +   +
+|   |   |               |   |       |       |           |   |           |   |   |
++   +   +   +---+   +---+   +---+---+   +   +   +---+   +   +---+---+---+---+   +
+|   |       |       |       |           |       |   |               |           |
++   +---+---+   +---+   +---+---+---+   +---+---+   +---+---+---+   +   +---+   +
+|   |       |       |       |           |                       |   |   |       |
++   +   +   +---+---+---+   +   +---+---+   +---+---+---+---+   +   +   +---+---+
+|   |   |       |       |   |   |   |       |                   |   |           |
++   +   +---+   +   +   +   +   +   +   +---+   +   +---+---+---+   +---+---+   +
+|   |       |       |       |   |   |   |       |   |           |           |   |
++   +---+   +---+---+---+---+   +   +   +   +---+---+   +---+   +---+---+   +   +
+|       |   |                   |       |   |               |   |           |   |
++   +   +   +   +---+---+---+---+---+---+   +   +---+---+---+   +   +---+---+   +
+|   |   |   |   |       |               |       |               |           |   |
++   +   +   +   +---+   +   +---+   +   +---+---+   +---+---+   +---+---+   +   +
+|   |   |       |       |   |       |               |       |   |       |   |   |
++   +   +---+---+   +---+   +   +---+---+---+---+   +   +   +   +   +   +   +   +
+|   |                       |               |       |   |   |       |   |   |   |
++   +---+---+---+---+---+---+---+---+---+   +   +---+   +   +   +---+---+   +   +
+|       |       |                       |   |       |   |   |   |           |   |
++---+   +   +   +---+---+   +   +---+   +   +   +---+   +   +   +   +---+---+   +
+|       |   |           |   |       |   |   |   |       |   |   |   |           |
++   +---+   +---+---+   +---+   +   +   +   +   +   +---+   +---+   +   +---+   +
+|           |       |       |   |   |   |   |   |       |       |       |       |
++---+---+---+   +   +---+   +---+   +---+   +   +---+   +---+   +---+---+   +---+
+|           |   |           |       |       |   |       |           |       |   |
++   +---+   +   +---+---+---+   +   +   +---+---+   +---+   +---+---+   +---+   +
+|       |                       |   |                   |                       |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+```
 ...
 
 ### Bugs
-
+Right now, The only grid type supported is a perfect square.  There is a bug with assigning cell-id to non-square grids.
 ...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 
