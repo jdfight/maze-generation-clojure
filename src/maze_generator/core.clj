@@ -53,7 +53,7 @@
           i 0]
      (if (>= i (* width height))
         grid ;;(into (sorted-map) grid)  
-        (recur (conj grid (create-cell i (quot i height) (mod i height) width height))
+        (recur (conj grid (create-cell i (quot i height) (mod i width) width height))
                (inc i))))))
         
 ;;==== Selecting and linking Cells ====;;
@@ -112,11 +112,11 @@
 
 (defn binary-tree
   "creates a binary tree grid"
-  [width height]
-  (loop [grid (create-grid width height)
+  [width]
+  (loop [grid (create-grid width)
          cell (first grid)
          i 0]
-    (if (>= i (* width height))
+    (if (>= i (* width width))
         grid       
         (recur (link-cell-bidirectionally grid i (get-random-neighbor cell [(:north cell) (:east cell)]))
                (get-cell-by-id grid (inc i))
@@ -181,7 +181,7 @@
              (rest remaining)))))
     
 
-(defn print-maze
+(defn maze-to-string
   [cells width]
   (loop [rest-cells cells
          row (take width rest-cells)
