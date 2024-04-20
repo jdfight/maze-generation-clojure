@@ -53,7 +53,7 @@ Creates a binary tree maze.  This algorithm is the simplest and has a diagonal b
 
 #### Recursive Backtracker
 ```
-(recursive-backtracker maze-grid starting-cell-id)
+(recursive-backtracker width height)
 ```
 Creates a recursive backtracker maze.  This algorithm is more complex than binary tree and creates long winding passages.  I find these mazes to be more aesthetically pleasing.
 
@@ -61,7 +61,7 @@ Creates a recursive backtracker maze.  This algorithm is more complex than binar
 
 Enter this command into a REPL
 ```
-(println (maze-to-string (recursive-backtracker (create-grid 20) (rand-int 400)) 20))
+(println (maze-to-string (recursive-backtracker 20 20) 20))
 ```
 Example output:
 ```
