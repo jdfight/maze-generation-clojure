@@ -144,7 +144,30 @@
                    (recur (link-cell-bidirectionally maze (last visited) link-cell)
                           (conj visited link-cell))))))))
 
-        
+
+(defn aldous-broder
+  "Randomly walk, linking cells until all cells have been visited"
+  [width height]
+  (loop [maze (create-grid width height)
+         cell (rand-nth maze)
+         neighbor (get-cell-by-id maze (rand-nth (all-neighbors cell)))
+         unvisited (dec (count maze))]
+         (if (< unvisited 1)
+           maze
+          (do
+            (if (empty? (:links neighbor))
+              (recur (link-cell-bidirectionally maze (:id cell) (:id neighbor))
+                 neighbor
+                 (get-cell-by-id maze (rand-nth (all-neighbors neighbor)))
+                 (dec unvisited))
+              (recur maze
+                 neighbor
+                 (get-cell-by-id maze (rand-nth (all-neighbors neighbor)))
+                 unvisited))))))
+                        
+       
+    
+         
 ;;==== Printing Mazes to the Console ====;;
 
 (defn cell-linked
