@@ -135,13 +135,13 @@
            visited [start-cell]]
            (if (empty? visited)
              maze
-             (let [neighbor (all-neighbors (get-cell-by-id maze (first visited)))
+             (let [neighbor (all-neighbors (get-cell-by-id maze (last visited)))
                    unvisited-neighbors (get-unvisited-neighbors maze neighbor)]
                   
                (if (empty? (get-unvisited-neighbors maze neighbor))
-                 (recur maze (rest visited))
+                 (recur maze (pop visited))
                  (let [link-cell (rand-nth unvisited-neighbors)]
-                   (recur (link-cell-bidirectionally maze (first visited) link-cell)
+                   (recur (link-cell-bidirectionally maze (last visited) link-cell)
                           (conj visited link-cell))))))))
 
         
