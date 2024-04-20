@@ -53,7 +53,7 @@
           i 0]
      (if (>= i (* width height))
         grid ;;(into (sorted-map) grid)  
-        (recur (conj grid (create-cell i (quot i height) (mod i width) width height))
+        (recur (conj grid (create-cell i (quot i width) (mod i width) width height))
                (inc i))))))
         
 ;;==== Selecting and linking Cells ====;;
@@ -112,15 +112,16 @@
 
 (defn binary-tree
   "creates a binary tree grid"
-  [width]
-  (loop [grid (create-grid width)
+  ([width] (binary-tree width width))
+  ([width height]
+  (loop [grid (create-grid width height)
          cell (first grid)
          i 0]
     (if (>= i (* width width))
         grid       
         (recur (link-cell-bidirectionally grid i (get-random-neighbor cell [(:north cell) (:east cell)]))
                (get-cell-by-id grid (inc i))
-               (inc i)))))
+               (inc i))))))
 
 
 ;; This gave me a lot of trouble because there were some tricks I didn'trealize were possible

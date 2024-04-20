@@ -103,11 +103,6 @@ maze-generator.core=> (println (maze-to-string (recursive-backtracker (create-gr
 +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
 ```
-...
-
-### Bugs
-Right now, The only grid type supported is a perfect square.  There is a bug with assigning cell-id to non-square grids.
-...
 
 ## License
 
