@@ -63,6 +63,10 @@
   [cells id]
   (first (filter (comp #{id} :id) cells)))
 
+(defn remove-cell-by-id
+  [cells id]
+  (vec (remove #(= id (:id %)) cells)))
+
 (defn link-cell-undirectionally
   "Links a cell with a neighboring cell unidirectionally"
   [cells cell-id link-cell-id]
@@ -130,9 +134,9 @@
 ;;  You can embed lets within the loop - careful about the scope of let/loop/recur
 (defn recursive-backtracker
   "creates a recursive backtrackcer grid"
-  [grid start-cell]
-    (loop [maze grid
-           visited [start-cell]]
+  [width height]
+    (loop [maze (create-grid width height)
+           visited [(rand-int (* width height))]]
            (if (empty? visited)
              maze
              (let [neighbor (all-neighbors (get-cell-by-id maze (last visited)))
@@ -165,9 +169,7 @@
                  (get-cell-by-id maze (rand-nth (all-neighbors neighbor)))
                  unvisited))))))
                         
-       
-    
-         
+
 ;;==== Printing Mazes to the Console ====;;
 
 (defn cell-linked
