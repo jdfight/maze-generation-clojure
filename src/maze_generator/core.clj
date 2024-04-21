@@ -12,27 +12,27 @@
 
 (defn get-north
   [r c  width]
-     (if (> r 0)
-       (cell-id (dec r) c width)
-      nil))
+  (if (> r 0)
+    (cell-id (dec r) c width)
+    nil))
 
 (defn get-south
   [r c  width height]
-    (if (< (inc r) height)
-      (cell-id (inc r) c width)
+  (if (< (inc r) height)
+    (cell-id (inc r) c width)
     nil))
 
 (defn get-east
   [r c width]
   (if (< c (dec width))
-      (cell-id r (inc c) width) 
+    (cell-id r (inc c) width) 
     nil))
 
 (defn get-west
   [r c width]
-    (if (> c 0)
-      (cell-id r (dec c) width)
-      nil))
+  (if (> c 0)
+    (cell-id r (dec c) width)
+    nil))
 
 (defn create-cell
   "Creates a  new cells used to populate an initial grid of cells"
@@ -44,7 +44,7 @@
                    :south (get-south row column width height)
                    :east (get-east row column width)
                    :west (get-west row column width) })) 
-      
+
 (defn create-grid
   "Creates a grid consisting of cells. Can pass a single width for square grids or width and height for rectangular grids"
   ([width] (create-grid width width))
@@ -52,10 +52,10 @@
    (loop [grid []
           i 0]
      (if (>= i (* width height))
-        grid ;;(into (sorted-map) grid)  
-        (recur (conj grid (create-cell i (quot i width) (mod i width) width height))
-               (inc i))))))
-        
+       grid ;;(into (sorted-map) grid)  
+       (recur (conj grid (create-cell i (quot i width) (mod i width) width height))
+              (inc i))))))
+
 ;;==== Selecting and linking Cells ====;;
 
 (defn get-cell-by-id
@@ -86,22 +86,22 @@
 (defn get-random-neighbor
   [cell neighbors]
   (let[good-neighbors (filter #(not= nil %) neighbors)]
-  (if (not-empty good-neighbors)
-    (rand-nth good-neighbors)
-    nil)))
+    (if (not-empty good-neighbors)
+      (rand-nth good-neighbors)
+      nil)))
 
 (defn get-unvisited-neighbors
   [grid neighbors]
   (loop [neighbor (first neighbors)
-        unvisited []
-        remaining neighbors]
+         unvisited []
+         remaining neighbors]
     (if (empty? remaining)
       (filter #(not= nil %) unvisited)
       (recur (first (rest remaining))
-                    (if (empty? (:links (get-cell-by-id grid neighbor)))
-                        (conj unvisited neighbor)
-                        unvisited)
-                    (rest remaining)))))
+             (if (empty? (:links (get-cell-by-id grid neighbor)))
+               (conj unvisited neighbor)
+               unvisited)
+             (rest remaining)))))
 
 (defn all-neighbors
   "Gets all non-nil neighbors for a given cell"
@@ -118,14 +118,14 @@
   "creates a binary tree grid"
   ([width] (binary-tree width width))
   ([width height]
-  (loop [grid (create-grid width height)
-         cell (first grid)
-         i 0]
-    (if (>= i (* width width))
-        grid       
-        (recur (link-cell-bidirectionally grid i (get-random-neighbor cell [(:north cell) (:east cell)]))
-               (get-cell-by-id grid (inc i))
-               (inc i))))))
+   (loop [grid (create-grid width height)
+          cell (first grid)
+          i 0]
+     (if (>= i (* width width))
+       grid       
+       (recur (link-cell-bidirectionally grid i (get-random-neighbor cell [(:north cell) (:east cell)]))
+              (get-cell-by-id grid (inc i))
+              (inc i))))))
 
 
 ;; This gave me a lot of trouble because there were some tricks I didn'trealize were possible
@@ -135,18 +135,18 @@
 (defn recursive-backtracker
   "creates a recursive backtrackcer grid"
   [width height]
-    (loop [maze (create-grid width height)
-           visited [(rand-int (* width height))]]
-           (if (empty? visited)
-             maze
-             (let [neighbor (all-neighbors (get-cell-by-id maze (last visited)))
-                   unvisited-neighbors (get-unvisited-neighbors maze neighbor)]
-                  
-               (if (empty? (get-unvisited-neighbors maze neighbor))
-                 (recur maze (pop visited))
-                 (let [link-cell (rand-nth unvisited-neighbors)]
-                   (recur (link-cell-bidirectionally maze (last visited) link-cell)
-                          (conj visited link-cell))))))))
+  (loop [maze (create-grid width height)
+         visited [(rand-int (* width height))]]
+    (if (empty? visited)
+      maze
+      (let [neighbor (all-neighbors (get-cell-by-id maze (last visited)))
+            unvisited-neighbors (get-unvisited-neighbors maze neighbor)]
+        
+        (if (empty? (get-unvisited-neighbors maze neighbor))
+          (recur maze (pop visited))
+          (let [link-cell (rand-nth unvisited-neighbors)]
+            (recur (link-cell-bidirectionally maze (last visited) link-cell)
+                   (conj visited link-cell))))))))
 
 
 (defn aldous-broder
@@ -156,19 +156,62 @@
          cell (rand-nth maze)
          neighbor (get-cell-by-id maze (rand-nth (all-neighbors cell)))
          unvisited (dec (count maze))]
-         (if (< unvisited 1)
-           maze
-          (do
-            (if (empty? (:links neighbor))
-              (recur (link-cell-bidirectionally maze (:id cell) (:id neighbor))
+    (if (< unvisited 1)
+      maze
+      (do
+        (if (empty? (:links neighbor))
+          (recur (link-cell-bidirectionally maze (:id cell) (:id neighbor))
                  neighbor
                  (get-cell-by-id maze (rand-nth (all-neighbors neighbor)))
                  (dec unvisited))
-              (recur maze
+          (recur maze
                  neighbor
                  (get-cell-by-id maze (rand-nth (all-neighbors neighbor)))
                  unvisited))))))
-                        
+
+
+(defn wilson
+  "similar to Aldous Broder but keeps track of its path and erasing it as it traverses through the maze."
+  [width height]
+  (loop [maze (create-grid width height)
+         cell (rand-nth maze)
+         unvisited (remove-cell-by-id maze (:id cell))]
+    ;; Local functions that will help traverse and link the path.
+    (letfn [(wilson-path
+              ;;Start at a cell and randomly walk unvisited neighbors, building up the path
+              [unvisited wpcell path]
+              (if (nil? (get-cell-by-id unvisited (:id wpcell)))
+                path
+                (do
+                  (let [neighbor (get-cell-by-id maze (rand-nth (all-neighbors wpcell)))
+                        pos (.indexOf path neighbor)]
+                    (if (> pos -1)
+                      (recur
+                       unvisited
+                       neighbor
+                       (subvec path 0 (inc pos)))
+                      (recur unvisited neighbor (conj path neighbor)))))))
+
+            (wilson-path-linker
+              ;;Traverse through the path and link cells to their neighbors
+              [maze unvisited path]
+              (if (< (count path) 2)
+                {:m maze :u unvisited}
+                (recur
+                 (link-cell-bidirectionally maze (:id (first path)) (:id (second path)))
+                 (remove-cell-by-id unvisited (:id (first path)))
+                 (rest path))))]
+      ;; End function definitions
+      (if (empty? unvisited)
+        maze
+        (do
+          (let [ncell (rand-nth unvisited)
+                path (wilson-path unvisited ncell [ncell])
+                linked (wilson-path-linker maze unvisited path)]
+            (recur
+             (:m linked)
+             ncell
+             (:u linked))))))))
 
 ;;==== Printing Mazes to the Console ====;;
 
@@ -205,7 +248,7 @@
       (apply str (concat result "\n"))
       (recur (apply str (concat result (cell-bottom-to-string (first remaining))))
              (rest remaining)))))
-    
+
 
 (defn maze-to-string
   [cells width]
@@ -213,11 +256,9 @@
          row (take width rest-cells)
          output (apply str (concat "+" (repeat width "---+") "\n"))]
     (if (empty? rest-cells)
-        output
-        (recur (drop width rest-cells)
-               (take width (drop width rest-cells))
-               (apply str (concat output (cell-row-top-to-string row) (cell-row-bottom-to-string row)))))))
+      output
+      (recur (drop width rest-cells)
+             (take width (drop width rest-cells))
+             (apply str (concat output (cell-row-top-to-string row) (cell-row-bottom-to-string row)))))))
 
 
-
-      

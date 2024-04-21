@@ -108,6 +108,16 @@ Example output:
 +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 ```
 
+#### More Examples
+##### Aldous Broder
+```
+(println (maze-to-string (aldous-broder 10 10) 10)))
+```
+##### Wilson's
+```
+(println (maze-to-string (wilson 10 10) 10)))
+```
+
 ## License
 
 MIT License
