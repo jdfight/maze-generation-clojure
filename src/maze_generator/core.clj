@@ -103,6 +103,19 @@
                unvisited)
              (rest remaining)))))
 
+(defn get-unvisited-neighbor-ids
+  [grid neighbors]
+  (loop [neighbor (first neighbors)
+         unvisited []
+         remaining neighbors]
+    (if (empty? remaining)
+      (filter #(not= nil %) unvisited)
+      (recur (first (rest remaining))
+             (if (empty? (:links (get-cell-by-id grid neighbor)))
+               (conj unvisited (:id neighbor))
+               unvisited)
+             (rest remaining)))))
+
 (defn all-neighbors
   "Gets all non-nil neighbors for a given cell"
   [cell]
@@ -121,7 +134,7 @@
    (loop [grid (create-grid width height)
           cell (first grid)
           i 0]
-     (if (>= i (* width width))
+     (if (>= i (* width height))
        grid       
        (recur (link-cell-bidirectionally grid i (get-random-neighbor cell [(:north cell) (:east cell)]))
               (get-cell-by-id grid (inc i))
@@ -213,6 +226,41 @@
              ncell
              (:u linked))))))))
 
+
+
+
+(defn walk-to-neighbors
+  "walk through cells and neighbors, linking unvisted neighbors"
+  [maze cell neighbors]
+  (loop [m maze
+         c cell
+         ns neighbors]
+    (if (empty? (get-unvisited-cells m))
+      m
+      (do
+           (let [neighbor (get-cell-by-id m (first ns))]
+             (if (empty? (:links neighbor))
+               (recur (link-cell-bidirectionally m (:id c) (:id neighbor))
+                      neighbor
+                      (shuffle (all-neighbors neighbor)))
+               ;;(if (empty? (rest ns))
+                 ;;(recur m cell (reverse (all-neighbors cell))) ;; go back to the original cell and go through the neighbors in reverse
+                 (recur m neighbor (shuffle (all-neighbors neighbor))))))))) ;; got to random neighbors from the current one. 
+                           
+
+
+(defn recursive-walk
+  "This doesn't actually achieve the effect of recursive backwalker - but I like the resulting mazes."
+  [width height]
+  (let [maze (create-grid width height)
+        cell (rand-nth maze)
+        neighbors (shuffle (all-neighbors cell))]
+    (println "start at" (str (:id cell)))
+   (walk-to-neighbors maze cell neighbors)))
+
+
+
+
 ;;==== Printing Mazes to the Console ====;;
 
 (defn cell-linked
@@ -260,5 +308,10 @@
       (recur (drop width rest-cells)
              (take width (drop width rest-cells))
              (apply str (concat output (cell-row-top-to-string row) (cell-row-bottom-to-string row)))))))
+
+(defn print-maze
+  [fn-maze width height]
+  (println (maze-to-string (fn-maze width height) width)))
+
 
 

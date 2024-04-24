@@ -13,7 +13,7 @@ Checkout the source and open up a Leiningen REPL.
 To print a maze, open up a REPL in the project folder and evaluate One of the following commands :
 
 ```
-(println (maze-to-string (binary-tree 10) 10))
+(print-maze binary-tree 10 10)
 ```
 Example output:
 ```
@@ -61,7 +61,7 @@ Creates a recursive backtracker maze.  This algorithm is more complex than binar
 
 Enter this command into a REPL
 ```
-(println (maze-to-string (recursive-backtracker 20 20) 20))
+(print-maze recursive-backtracker 20 20)
 ```
 Example output:
 ```
@@ -111,11 +111,16 @@ Example output:
 #### More Examples
 ##### Aldous Broder
 ```
-(println (maze-to-string (aldous-broder 10 10) 10)))
+(print-maze aldous-broder 10 10)
 ```
 ##### Wilson's
 ```
-(println (maze-to-string (wilson 10 10) 10)))
+(print-maze wilson 10 10)
+```
+
+##### Recursive Walk
+```
+(print-maze recursive-walk 10 10)
 ```
 
 ## License
