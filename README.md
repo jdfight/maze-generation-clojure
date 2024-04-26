@@ -123,6 +123,11 @@ Example output:
 (print-maze recursive-walk 10 10)
 ```
 
+##### Hunt And Kill
+```
+(print-maze hunt-and-kill 10 10)
+```
+
 ## License
 
 MIT License

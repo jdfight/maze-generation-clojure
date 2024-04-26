@@ -125,6 +125,17 @@
   [grid]
   (filter (comp empty? :links) grid))
 
+(defn get-visited-neighbors
+  [maze cell]
+  (loop [visited []
+        neighbors (all-neighbors cell)]
+    (if (empty? neighbors)
+      visited
+      (do
+        (if (not-empty (:links (get-cell-by-id maze (first neighbors))))
+          (recur (conj visited (first neighbors)) (rest neighbors))
+          (recur visited (rest neighbors)))))))
+
 ;;==== Maze Generation Algorithms ====;;
 
 (defn binary-tree
@@ -242,10 +253,8 @@
              (if (empty? (:links neighbor))
                (recur (link-cell-bidirectionally m (:id c) (:id neighbor))
                       neighbor
-                      (shuffle (all-neighbors neighbor)))
-               ;;(if (empty? (rest ns))
-                 ;;(recur m cell (reverse (all-neighbors cell))) ;; go back to the original cell and go through the neighbors in reverse
-                 (recur m neighbor (shuffle (all-neighbors neighbor))))))))) ;; got to random neighbors from the current one. 
+                      (shuffle (all-neighbors neighbor)))              
+               (recur m neighbor (shuffle (all-neighbors neighbor))))))))) ;; got to random neighbors from the current one. 
                            
 
 
@@ -259,6 +268,40 @@
    (walk-to-neighbors maze cell neighbors)))
 
 
+
+
+(defn go-hunting
+  "Hunt across the maze for cells to link with visited neighbors"
+  [maze]
+  (loop [m maze
+         cells maze
+         ncell nil]
+      (if (empty? cells)
+        {:maze m :cell ncell}
+        (do
+          (let [cell (first cells)
+                visited-neighbors (get-visited-neighbors m cell)]
+            (if (and (empty? (:links cell)) (some? (not-empty visited-neighbors)))
+              (do (let [rand-neighbor (rand-nth visited-neighbors)]
+              (recur (link-cell-bidirectionally m (:id cell) rand-neighbor) (rest cells) cell)))
+              (recur m (rest cells) ncell)))))))
+      
+    
+(defn hunt-and-kill
+  "start at a random cell and link unvisited neighbors until reaching a cell with no unvisited neighbors.  Then hunt the entire maze to link already visited cells."
+  [width height]
+  (loop [maze (create-grid width height)
+         current-cell (rand-nth maze)]
+    (if (nil? current-cell)
+      maze
+      (do
+        (let [unvisited-neighbors (shuffle (get-unvisited-neighbors maze (all-neighbors current-cell)))
+              link-result (link-cell-bidirectionally maze (:id current-cell) (first unvisited-neighbors))]
+              (if (some? (not-empty unvisited-neighbors))
+                (recur link-result (get-cell-by-id link-result (first unvisited-neighbors)))
+                (let [hunt (go-hunting maze)]
+                  (recur (:maze hunt) (:cell hunt)))))))))
+                
 
 
 ;;==== Printing Mazes to the Console ====;;
