@@ -1,5 +1,15 @@
 (ns maze-generator.core
+  (:require [clojure.data.json :as json]
+            [ring.adapter.jetty   :refer [run-jetty]]
+            [clojure.pprint       :refer [pprint]]
+            [compojure.core       :refer [routes GET POST]]
+            [compojure.route      :refer [not-found]]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+            [ring.util.response   :refer [response]])
+  (:use [clojure.walk]
+        [ring.middleware.params])
   (:gen-class))
+   
 
 ;;==== Creating Cells  ====;;
 
@@ -138,6 +148,7 @@
 
 ;;==== Maze Generation Algorithms ====;;
 
+;; Binary Tree:
 (defn binary-tree
   "creates a binary tree grid"
   ([width] (binary-tree width width))
@@ -152,6 +163,7 @@
               (inc i))))))
 
 
+;; Recursive Backtracker
 ;; This gave me a lot of trouble because there were some tricks I didn'trealize were possible
 ;; Notable things I learned :
 ;;  You can have  multiple recur forms within the loop
@@ -173,6 +185,7 @@
                    (conj visited link-cell))))))))
 
 
+;;Aldous Broder
 (defn aldous-broder
   "Randomly walk, linking cells until all cells have been visited"
   [width height]
@@ -194,6 +207,7 @@
                  unvisited))))))
 
 
+;;Wilson's
 (defn wilson
   "similar to Aldous Broder but keeps track of its path and erasing it as it traverses through the maze."
   [width height]
@@ -239,7 +253,7 @@
 
 
 
-
+;;Recursive walk.  This was a failed attempt at implementing REcursive backtracker - but it generates a valid maze and it is interesting.
 (defn walk-to-neighbors
   "walk through cells and neighbors, linking unvisted neighbors"
   [maze cell neighbors]
@@ -269,7 +283,7 @@
 
 
 
-
+;; Hunt and Kill
 (defn go-hunting
   "Hunt across the maze for cells to link with visited neighbors"
   [maze]
@@ -356,5 +370,97 @@
   [fn-maze width height]
   (println (maze-to-string (fn-maze width height) width)))
 
+
+;; Output maze to JSON
+(defn validate-maze-fn
+  [name]
+  (ns-resolve *ns* name))
+
+(defn maze-title
+  [maze-fn]
+  (cond
+    (= maze-fn aldous-broder) "Aldous Broder"
+    (= maze-fn binary-tree) "Binary Tree"
+    (= maze-fn wilson) "Wilson's"
+    (= maze-fn hunt-and-kill) "Hunt and Kill"
+    (= maze-fn recursive-backtracker) "Recursive Backtracker"
+    (= maze-fn recursive-walk) "Recursive Walk"))
+
+(defn name-to-maze-fn
+  [name]
+  (cond
+    (= name "aldous-broder") aldous-broder
+    (= name "binary-tree") binary-tree
+    (= name "wilson") wilson
+    (= name "hunt-and-kill") hunt-and-kill
+    (= name "recursive-backtracker") recursive-backtracker
+    (= name "recursive-walk") recursive-walk))
+    
+(defn json-maze
+  [maze-fn width height]
+  (let [maze (maze-fn width height)]
+  (json/write-str {:title (maze-title maze-fn)
+                   :width width
+                   :height height
+                   :maze maze
+                   :to-string (maze-to-string maze width)})))
+  
+(defn random-maze-fn
+  []
+   (let [roll (rand-int 100)
+        maze-fn
+        (cond
+          (< roll 16) aldous-broder
+          (< roll 32) binary-tree
+          (< roll 48) wilson
+          (< roll 64) recursive-backtracker
+          (< roll 80) hunt-and-kill
+          (< roll 100) recursive-walk)]
+     maze-fn))
+
+(defn random-maze
+  []
+  (let [roll (rand-int 100)
+        maze-fn (random-maze-fn) 
+        width (rand-nth (range 10 30))
+        height (rand-nth (range 10 30))]
+    (maze-fn width height)))
+
+
+(defn print-random-maze
+  []
+  (let [width (rand-nth (range 10 30))
+        height (rand-nth (range 10 30))
+        maze (random-maze-fn)]
+    (print-maze maze width height)))
+
+;; Web server
+(defn maze-request-handler
+  [request]
+  (let [mapped-params (keywordize-keys (:params request))
+        maze-fn (name-to-maze-fn (:name mapped-params))
+        w (Integer/parseInt (:w mapped-params))
+        h (Integer/parseInt (:h mapped-params))]
+    (if (or (nil? maze-fn) (nil? (:w mapped-params)) (nil? (:h mapped-params)))
+      nil
+      (json-maze maze-fn w h))))
+
+
+(def my-routes
+  (routes 
+   (GET  "/random-maze"  []     (response (json-maze hunt-and-kill 20 20)))
+   (GET  "/maze"        request (response (maze-request-handler request)))
+   (POST "/debug"       request (response (with-out-str (clojure.pprint/pprint request))))
+   (not-found {:error "Not found"})))
+
+(def app
+  (-> my-routes
+      wrap-params
+      wrap-json-body
+      wrap-json-response))
+
+(defn -main
+  []
+  (run-jetty app {:port 3000}))
 
 
