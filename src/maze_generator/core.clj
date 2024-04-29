@@ -8,7 +8,8 @@
             [ring.util.response   :refer [response]])
   (:use [clojure.walk]
         [ring.middleware.params])
-  (:gen-class))
+  (:gen-class
+	:main true))
    
 
 ;;==== Creating Cells  ====;;
@@ -448,7 +449,7 @@
 
 (def my-routes
   (routes 
-   (GET  "/random-maze"  []     (response (json-maze hunt-and-kill 20 20)))
+   (GET  "/random-maze"  []     (response (json-maze (random-maze-fn) (rand-nth (range 10 30)) (rand-nth (range 10 30)))))
    (GET  "/maze"        request (response (maze-request-handler request)))
    (POST "/debug"       request (response (with-out-str (clojure.pprint/pprint request))))
    (not-found {:error "Not found"})))
