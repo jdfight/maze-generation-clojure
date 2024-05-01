@@ -279,7 +279,7 @@
   (let [maze (create-grid width height)
         cell (rand-nth maze)
         neighbors (shuffle (all-neighbors cell))]
-    (println "start at" (str (:id cell)))
+    ;;(println "start at" (str (:id cell)))
    (walk-to-neighbors maze cell neighbors)))
 
 
@@ -423,8 +423,8 @@
   []
   (let [roll (rand-int 100)
         maze-fn (random-maze-fn) 
-        width (rand-nth (range 10 30))
-        height (rand-nth (range 10 30))]
+        width (rand-nth (range 10 20))
+        height (rand-nth (range 10 20))]
     (maze-fn width height)))
 
 
@@ -449,7 +449,7 @@
 
 (def my-routes
   (routes 
-   (GET  "/random-maze"  []     (response (json-maze (random-maze-fn) (rand-nth (range 10 30)) (rand-nth (range 10 30)))))
+   (GET  "/random-maze"  []     (response (json-maze (random-maze-fn) (rand-nth (range 10 24)) (rand-nth (range 10 24)))))
    (GET  "/maze"        request (response (maze-request-handler request)))
    (POST "/debug"       request (response (with-out-str (clojure.pprint/pprint request))))
    (not-found {:error "Not found"})))
